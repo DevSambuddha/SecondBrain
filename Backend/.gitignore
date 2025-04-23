@@ -1,1 +1,11 @@
-node_modules
+# dependencies
+node_modules/
+
+# dotenv files
+.env
+
+# build
+dist/
+
+# system
+.DS_Store
