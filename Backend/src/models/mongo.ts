@@ -1,46 +1,52 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
+import { MONGODB_DB } from "../config";
 
-const Schema = mongoose.Schema;
 const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.mongodb!);
-    console.log("Connected to Database!");
-  } catch (error) {
-    console.log("Could not connect the db:", error);
-  }
+  await mongoose.connect(MONGODB_DB);
+  console.log("Connected to Database!");
 };
 
-const ObjectId = mongoose.Types.ObjectId;
-
-interface User {
+export interface User {
   email: string;
   password: string;
 }
 
-interface Content {
+export interface Content {
   type: string;
   link: string;
   title: string;
-  tags: string[];
+  tags: mongoose.Types.ObjectId[];
+  userId: mongoose.Types.ObjectId;
 }
 
-const userSchema = new Schema<User>({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-});
-
-const contentSchema = new Schema<Content>({
-  type: {
-    type: String,
-    enum: ["document", "tweet", "youtube", "link"],
-    required: true,
+const userSchema = new Schema<User>(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
   },
-  link: { type: String, required: true },
-  title: { type: String, required: true },
-  tags: [{ type: String, required: true }],
-});
+  { timestamps: true }
+);
 
-const userModel = mongoose.model("user", userSchema);
+const contentSchema = new Schema<Content>(
+  {
+    type: {
+      type: String,
+      enum: ["document", "tweet", "youtube", "link"],
+      required: true,
+    },
+    link: { type: String, required: true },
+    title: { type: String, required: true },
+    tags: [{ type: mongoose.Schema.Types.ObjectId, ref: "Tag" }],
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+  },
+  { timestamps: true }
+);
 
-export { userModel };
+export const userModel = model<User>("User", userSchema);
+export const contentModel = model<Content>("Content", contentSchema);
+
 export default connectDB;
