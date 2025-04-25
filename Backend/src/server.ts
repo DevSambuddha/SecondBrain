@@ -1,7 +1,8 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 import connectDB from "./models/mongo";
-require("dotenv").config();
 import { userModel, contentModel } from "./models/mongo";
 import { JWT_SECRET, SERVER_PORT } from "./config";
 import { userMiddleware } from "./middleware/middleware";
@@ -15,10 +16,11 @@ app.post("/api/v1/signup", async (req, res) => {
   const { email, password } = req.body;
   const user = { email, password };
   try {
-    await userModel.create(user);
-    jwt.sign(user, JWT_SECRET!);
+    const createdUser = await userModel.create(user);
+    const token = jwt.sign({ id: createdUser._id }, JWT_SECRET!);
     res.json({
       message: "User created successfully",
+      token,
     });
   } catch (e) {
     res.status(411).json({ message: "User already exists" });
@@ -43,15 +45,13 @@ app.post("/api/v1/content", userMiddleware, async (req, res) => {
   await contentModel.create({
     type,
     link,
-    title: String,
+    title: req.body.title,
     tags: [],
-    //@ts-ignore
     userId: req.userId,
   });
   res.json({ message: "Content Added!" });
 });
 app.get("/api/v1/content", userMiddleware, async (req, res) => {
-  //@ts-ignore
   const userId = req.userId;
   const content = await contentModel
     .find({ userId: userId })
@@ -62,8 +62,7 @@ app.delete("/api/v1/content", userMiddleware, async (req, res) => {
   const contentId = req.body.contentId;
   await contentModel.deleteMany({
     contentId,
-    //@ts-ignore
-    userId = "req.userId",
+    userId: "req.userId",
   });
   res.json({ message: "Deleted" });
 });
@@ -72,8 +71,9 @@ app.get("/api/v1/brain/:shareLink", (req, res) => {});
 
 const PORT = SERVER_PORT;
 
-async () => {
-  app.listen(PORT);
-  console.log(`Server started on PORT ${PORT}`);
+(async () => {
   await connectDB();
-};
+  app.listen(PORT, () => {
+    console.log(`Server started on PORT ${PORT}`);
+  });
+})();
