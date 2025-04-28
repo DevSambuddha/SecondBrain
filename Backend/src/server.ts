@@ -2,15 +2,15 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
-import connectDB from "./models/mongo";
+import connectDB, { shareModel } from "./models/mongo";
 import { userModel, contentModel } from "./models/mongo";
 import { JWT_SECRET, SERVER_PORT } from "./config";
 import { userMiddleware } from "./middleware/middleware";
+import { randomString } from "./Utils";
 
 const app = express();
 
 app.use(express.json());
-// app.use()
 
 app.post("/api/v1/signup", async (req, res) => {
   const { email, password } = req.body;
@@ -34,7 +34,7 @@ app.post("/api/v1/signin", async (req, res) => {
 
   if (existingUser) {
     const token = jwt.sign({ id: existingUser._id }, JWT_SECRET!);
-    res.json(token);
+    res.json({ message: "Signed in successfully", token });
   } else {
     res.status(403).json({ message: "Incorect credentials" });
   }
@@ -66,8 +66,52 @@ app.delete("/api/v1/content", userMiddleware, async (req, res) => {
   });
   res.json({ message: "Deleted" });
 });
-app.post("/api/v1/brain/share", (req, res) => {});
-app.get("/api/v1/brain/:shareLink", (req, res) => {});
+app.post("/api/v1/share", userMiddleware, async (req, res) => {
+  const share = req.body.share;
+
+  if (share) {
+    const existingLink = await shareModel.findOne({
+      userId: req.userId,
+    });
+    if (existingLink) {
+      res.json({ message: "Already Shared", hash: existingLink.hash });
+    }
+    const hash = randomString(10);
+    await shareModel.create({
+      userId: req.userId,
+      hash: hash,
+    });
+
+    res.json({ message: "Shared", hash });
+  } else {
+    await shareModel.deleteOne({
+      userId: req.userId,
+    });
+    res.json({ message: "Unshared" });
+  }
+  res.json({ message: "Updated sharable link" });
+});
+app.get("/api/v1/:shareLink", async (req, res) => {
+  const hash = req.params.shareLink;
+  const share = await shareModel.findOne({ hash });
+
+  if (!share) {
+    res.status(411).json({ message: "Share link not found" });
+    return; //early return
+  }
+  const user = await userModel.findOne({ _id: share.userId });
+  const content = await contentModel.find({ userId: share.userId });
+  if (!user) {
+    res
+      .status(411)
+      .json({ message: "User not found,error should ideally not happen" });
+    return;
+  }
+  res.json({
+    username: user.email,
+    content,
+  });
+});
 
 const PORT = SERVER_PORT;
 

@@ -19,6 +19,11 @@ export interface Content {
   userId: mongoose.Types.ObjectId;
 }
 
+export interface Share {
+  hash: string;
+  userId: mongoose.Types.ObjectId;
+}
+
 const userSchema = new Schema<User>(
   {
     email: { type: String, required: true, unique: true },
@@ -31,7 +36,7 @@ const contentSchema = new Schema<Content>(
   {
     type: {
       type: String,
-      enum: ["document", "tweet", "youtube", "link"],
+      enum: ["document", "twitter", "facebook", "youtube", "link"],
       required: true,
     },
     link: { type: String, required: true },
@@ -46,7 +51,20 @@ const contentSchema = new Schema<Content>(
   { timestamps: true }
 );
 
+const shareSchema = new Schema<Share>(
+  {
+    hash: { type: String, required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: "User",
+    },
+  },
+  { timestamps: true }
+);
+
 export const userModel = model<User>("User", userSchema);
 export const contentModel = model<Content>("Content", contentSchema);
+export const shareModel = model<Share>("Share", shareSchema);
 
 export default connectDB;
