@@ -7,18 +7,20 @@ export interface ButtonProps {
   size: "sm" | "md" | "lg";
   IconFirst?: ReactElement;
   IconLast?: ReactElement;
+  fullWidth?: boolean;
   onClick?: () => void;
 }
 
-const variantStyle = {
+export const variantStyle = {
   primary: " bg-(--color-primary) text-(--color-text)",
   secondary: "bg-(--color-secondary) text-(--color-text-secondary)",
 };
-const sizeStyle = {
+export const sizeStyle = {
   sm: "text-sm",
   md: "text-md",
   lg: "text-lg",
 };
+
 const defaultStyle =
   "flex px-4 py-2  rounded-md font-light justify-center items-center cursor-pointer";
 const Buttons = (props: ButtonProps) => {
@@ -29,7 +31,8 @@ const Buttons = (props: ButtonProps) => {
         onClick={props.onClick}
         className={`${variantStyle[props.variant]} ${
           sizeStyle[props.size]
-        } ${defaultStyle}`}
+        } ${defaultStyle} ${props.fullWidth ? "w-full" : ""} 
+        `}
       >
         {props.IconFirst ? <div className="pr-2">{props.IconFirst}</div> : null}
         {props.text}
