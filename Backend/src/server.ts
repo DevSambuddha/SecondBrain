@@ -7,10 +7,12 @@ import { userModel, contentModel } from "./models/mongo";
 import { JWT_SECRET, SERVER_PORT } from "./config";
 import { userMiddleware } from "./middleware/middleware";
 import { randomString } from "./Utils";
+import cors from "cors";
 
 const app = express();
 
 app.use(express.json());
+app.use(cors({ methods: ["GET", "POST", "DELETE"], credentials: true }));
 
 app.post("/api/v1/signup", async (req: Request, res: Response) => {
   const { email, password } = req.body;
