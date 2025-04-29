@@ -1,4 +1,4 @@
-import express from "express";
+import express, { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
@@ -12,7 +12,7 @@ const app = express();
 
 app.use(express.json());
 
-app.post("/api/v1/signup", async (req, res) => {
+app.post("/api/v1/signup", async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = { email, password };
   try {
@@ -26,7 +26,7 @@ app.post("/api/v1/signup", async (req, res) => {
     res.status(411).json({ message: "User already exists" });
   }
 });
-app.post("/api/v1/signin", async (req, res) => {
+app.post("/api/v1/signin", async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = { email, password };
 
@@ -39,59 +39,75 @@ app.post("/api/v1/signin", async (req, res) => {
     res.status(403).json({ message: "Incorect credentials" });
   }
 });
-app.post("/api/v1/content", userMiddleware, async (req, res) => {
-  const type = req.body.type;
-  const link = req.body.link;
-  await contentModel.create({
-    type,
-    link,
-    title: req.body.title,
-    tags: [],
-    userId: req.userId,
-  });
-  res.json({ message: "Content Added!" });
-});
-app.get("/api/v1/content", userMiddleware, async (req, res) => {
-  const userId = req.userId;
-  const content = await contentModel
-    .find({ userId: userId })
-    .populate("userId", "email");
-  res.json({ content });
-});
-app.delete("/api/v1/content", userMiddleware, async (req, res) => {
-  const contentId = req.body.contentId;
-  await contentModel.deleteMany({
-    contentId,
-    userId: "req.userId",
-  });
-  res.json({ message: "Deleted" });
-});
-app.post("/api/v1/share", userMiddleware, async (req, res) => {
-  const share = req.body.share;
-
-  if (share) {
-    const existingLink = await shareModel.findOne({
+app.post(
+  "/api/v1/content",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    const type = req.body.type;
+    const link = req.body.link;
+    await contentModel.create({
+      type,
+      link,
+      title: req.body.title,
+      tags: [],
       userId: req.userId,
     });
-    if (existingLink) {
-      res.json({ message: "Already Shared", hash: existingLink.hash });
-    }
-    const hash = randomString(10);
-    await shareModel.create({
-      userId: req.userId,
-      hash: hash,
-    });
-
-    res.json({ message: "Shared", hash });
-  } else {
-    await shareModel.deleteOne({
-      userId: req.userId,
-    });
-    res.json({ message: "Unshared" });
+    res.json({ message: "Content Added!" });
   }
-  res.json({ message: "Updated sharable link" });
-});
-app.get("/api/v1/:shareLink", async (req, res) => {
+);
+app.get(
+  "/api/v1/content",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    const userId = req.userId;
+    const content = await contentModel
+      .find({ userId: userId })
+      .populate("userId", "email");
+    res.json({ content });
+  }
+);
+app.delete(
+  "/api/v1/content",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    const contentId = req.body.contentId;
+    await contentModel.deleteMany({
+      contentId,
+      userId: "req.userId",
+    });
+    res.json({ message: "Deleted" });
+  }
+);
+app.post(
+  "/api/v1/share",
+  userMiddleware,
+  async (req: Request, res: Response) => {
+    const share = req.body.share;
+
+    if (share) {
+      const existingLink = await shareModel.findOne({
+        userId: req.userId,
+      });
+      if (existingLink) {
+        res.json({ message: "Already Shared", hash: existingLink.hash });
+      }
+      const hash = randomString(10);
+      await shareModel.create({
+        userId: req.userId,
+        hash: hash,
+      });
+
+      res.json({ message: "Shared", hash });
+    } else {
+      await shareModel.deleteOne({
+        userId: req.userId,
+      });
+      res.json({ message: "Unshared" });
+    }
+    res.json({ message: "Updated sharable link" });
+  }
+);
+app.get("/api/v1/:shareLink", async (req: Request, res: Response) => {
   const hash = req.params.shareLink;
   const share = await shareModel.findOne({ hash });
 
