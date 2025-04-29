@@ -1,7 +1,7 @@
 import { ButtonLogin } from "../components/ui/ButtonLogin";
 import { Input } from "../components/ui/Input";
 
-export const Signin = () => {
+export const SignIn = () => {
   return (
     <div className="w-screen h-screen bg-gray-200 flex justify-center items-center">
       <div className="flex flex-col bg-white rounded-xl min-w-80 border border-gray-200 p-8 gap-4">
