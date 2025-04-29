@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { Request, response, Response } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
@@ -104,7 +104,6 @@ app.post(
       });
       res.json({ message: "Unshared" });
     }
-    res.json({ message: "Updated sharable link" });
   }
 );
 app.get("/api/v1/:shareLink", async (req: Request, res: Response) => {
