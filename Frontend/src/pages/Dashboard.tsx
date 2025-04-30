@@ -1,13 +1,15 @@
 import { useState } from "react";
 import Buttons from "../components/ui/Buttons";
-import { Card } from "../components/ui/Card";
+import { Card, CardProps } from "../components/ui/Card";
 import { CreateContentModal } from "../components/ui/CreateContentModal";
 import { PlusIcon } from "../icons/PlusIcon";
 import { ShareIcon } from "../icons/ShareIcon";
 import { SideBar } from "../components/ui/SideBar";
+import { useContent } from "../hooks/useContent";
 
 export const Dashboard = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const content = useContent();
   return (
     <>
       <div>
@@ -39,16 +41,9 @@ export const Dashboard = () => {
           </div>
 
           <div className="flex flex-wrap gap-4">
-            <Card
-              title="Sambuddha"
-              link="https://www.youtube.com/watch?v=SBcQT-SRu50"
-              type="youtube"
-            />
-            <Card
-              title="Sambuddha"
-              link="https://x.com/elonmusk/status/1916694738482483411"
-              type="twitter"
-            />
+            {content.map(({ type, title, link }: CardProps) => {
+              return <Card title={title} link={link} type={type} />;
+            })}
           </div>
         </div>
       </div>

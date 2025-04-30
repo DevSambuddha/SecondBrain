@@ -1,19 +1,27 @@
+import React, { forwardRef } from "react";
+
 export type typeVariant = "text" | "email" | "password";
-export interface InputProps {
+
+export interface InputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   type: typeVariant;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder: string;
 }
 
-export const Input = (props: InputProps) => {
-  return (
-    <div>
-      <input
-        type={props.type}
-        placeholder={props.placeholder}
-        className="w-full px-2 py-2 border border-gray-200 rounded-md"
-        onChange={props.onChange}
-      />
-    </div>
-  );
-};
+export const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ type, placeholder, ...rest }, ref) => {
+    return (
+      <div>
+        <input
+          ref={ref}
+          type={type}
+          placeholder={placeholder}
+          className="w-full px-2 py-2 border border-gray-200 rounded-md"
+          {...rest}
+        />
+      </div>
+    );
+  }
+);
+
+Input.displayName = "Input";
