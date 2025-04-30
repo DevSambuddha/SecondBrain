@@ -6,10 +6,15 @@ import { PlusIcon } from "../icons/PlusIcon";
 import { ShareIcon } from "../icons/ShareIcon";
 import { SideBar } from "../components/ui/SideBar";
 import { useContent } from "../hooks/useContent";
+import axios from "axios";
+import { BACKEND_URL, FRONTEND_URL } from "../config";
+import { CopyToClipboard } from "react-copy-to-clipboard";
 
 export const Dashboard = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const content = useContent();
+
   return (
     <>
       <div>
@@ -32,11 +37,31 @@ export const Dashboard = () => {
               IconFirst={<PlusIcon size="lg" />}
             />
             <Buttons
+              onClick={async () => {
+                const response = await axios.post(
+                  `${BACKEND_URL}/api/v1/share`,
+                  {
+                    share: true,
+                  },
+                  { headers: { Authorization: localStorage.getItem("token") } }
+                );
+                response.data.hash;
+                const shareURL = `${FRONTEND_URL}/share/${response.data.hash}`;
+                {
+                  shareURL && (
+                    <CopyToClipboard
+                      text={shareURL}
+                      onCopy={() => setCopied(true)}
+                    >
+                      <span>Copy to clipboard with span</span>
+                    </CopyToClipboard>
+                  );
+                }
+              }}
               variant="secondary"
               size="lg"
-              text="Share Brain"
+              text={copied ? "Copied!" : "Share Brain"}
               IconLast={<ShareIcon size="lg" />}
-              onClick={() => {}}
             />
           </div>
 
