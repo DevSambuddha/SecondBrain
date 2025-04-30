@@ -40,7 +40,7 @@ export const Dashboard = () => {
             />
           </div>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap mt-2 gap-4">
             {content.map(({ type, title, link }: CardProps) => {
               return <Card title={title} link={link} type={type} />;
             })}

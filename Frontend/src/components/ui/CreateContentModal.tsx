@@ -41,6 +41,7 @@ export const CreateContentModal = ({
         },
       }
     );
+    onClose?.();
   };
 
   return (
